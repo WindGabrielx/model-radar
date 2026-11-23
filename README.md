@@ -222,7 +222,7 @@ marks sentiment as **not evaluated yet**.
 Docker Desktop, Python 3.11+, a MongoDB Atlas M0 cluster, a Supabase project, and a free OpenRouter API key.
 
 ```bash
-cp .env.example .env                       # fill in your own values (never commit .env)
+# create .env in the project root with your own credentials (never commit it)
 python -m venv .venv && .venv/Scripts/activate      # Windows; use bin/activate on macOS/Linux
 pip install -r worker/requirements.txt -r app/requirements.txt
 

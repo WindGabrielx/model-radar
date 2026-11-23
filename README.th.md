@@ -220,7 +220,7 @@ dashboard จะแสดงว่าความเห็น **ยังไม�
 Docker Desktop, Python 3.11+, MongoDB Atlas M0 cluster, โปรเจกต์ Supabase และ OpenRouter API key แบบฟรี
 
 ```bash
-cp .env.example .env                       # ใส่ค่าของคุณเอง (ห้าม commit .env)
+# สร้างไฟล์ .env ที่ root ของโปรเจกต์ แล้วใส่ค่าของคุณเอง (ห้าม commit)
 python -m venv .venv && .venv/Scripts/activate      # Windows; macOS/Linux ใช้ bin/activate
 pip install -r worker/requirements.txt -r app/requirements.txt
 
