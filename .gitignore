@@ -1,0 +1,42 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+app/.streamlit/secrets.toml
+**/secrets.toml
+n8n/credentials/
+*credentials*.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Local caches / outputs
+.cache/
+*.log
+archive/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Raw spool (used while MongoDB is unreachable)
+data/raw_spool/
+
+# Hugging Face model cache (sentiment model weights)
+data/hf_cache/
+
+# Local tooling (Claude Code settings and installed agent skills)
+.claude/
+.agents/
+
+# Machine-local files not part of the project (e.g. downloaded CA certificates)
+config/
+
+# Temp file written by the labelling app during an atomic save
+data/labels/*.tmp

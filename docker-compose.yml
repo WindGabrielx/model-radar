@@ -1,0 +1,26 @@
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:2.48.7   # pinned 2026-11-22; bump deliberately
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=Asia/Bangkok       # cron nodes use this timezone
+      - TZ=Asia/Bangkok
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_DIAGNOSTICS_ENABLED=false
+    env_file: .env
+    volumes:
+      - n8n_data:/home/node/.n8n            # workflows + credentials survive restarts
+      - ./n8n/workflows:/workflows:ro       # for `n8n import:workflow`
+
+  worker:
+    image: ai-model-tracker-worker:local    # build: docker build -f worker/Dockerfile -t ai-model-tracker-worker:local .
+    restart: unless-stopped
+    env_file: .env                          # read at runtime, never baked into the image
+    volumes:
+      - ./data:/app/data                    # raw spool survives restarts (while MongoDB is unreachable)
+    # no published port: only n8n reaches it, at http://worker:8000
+
+volumes:
+  n8n_data:

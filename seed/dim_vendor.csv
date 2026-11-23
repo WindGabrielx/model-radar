@@ -1,0 +1,6 @@
+vendor_id,name,openrouter_prefixes,color_hex,hn_keywords,hn_context_terms
+openai,OpenAI,openai/,#0E9F6E,GPT|ChatGPT|OpenAI|Codex,OpenAI|model|AI|LLM|API
+anthropic,Anthropic,anthropic/,#D9704A,Claude|Anthropic,Anthropic|model|AI|LLM|API|Opus|Sonnet|Haiku
+google,Google,google/gemini,#3B82F6,Gemini,Google|DeepMind|model|AI|LLM
+deepseek,DeepSeek,deepseek/,#7C3AED,DeepSeek,
+xai,xAI,x-ai/,#64748B,Grok|xAI,xAI|Musk|model|AI|LLM
