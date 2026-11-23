@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 950" width="1200" height="950" font-family="Segoe UI, Inter, Helvetica Neue, Arial, sans-serif">
+  <title>Model Radar architecture: public data sources, n8n schedule, Python worker, MongoDB raw zone, Supabase PostgreSQL, NLP and analytics, Streamlit dashboard</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1222"/>
+      <stop offset="1" stop-color="#070b16"/>
+    </linearGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#1e293b"/>
+    </pattern>
+    <filter id="glow" x="-20%" y="-40%" width="140%" height="180%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="950" fill="url(#bg)"/>
+  <rect width="1200" height="950" fill="url(#dots)" opacity="0.6"/>
+
+  <!-- title -->
+  <text x="600" y="42" text-anchor="middle" font-size="22" font-weight="700" fill="#e2e8f0">Model Radar — how the data flows</text>
+
+  <!-- ============ 1. Data sources ============ -->
+  <rect x="150" y="66" width="900" height="178" rx="18" fill="none" stroke="#38bdf8" stroke-width="3" opacity="0.55" filter="url(#glow)"/>
+  <rect x="150" y="66" width="900" height="178" rx="18" fill="#38bdf8" fill-opacity="0.05" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="600" y="98" text-anchor="middle" font-size="20" font-weight="700" fill="#7dd3fc">Data sources</text>
+  <text x="600" y="120" text-anchor="middle" font-size="13" fill="#94a3b8">Free public APIs and pages · read-only · no paid model calls</text>
+
+  <g font-size="13" text-anchor="middle">
+    <!-- OpenRouter -->
+    <rect x="178" y="136" width="158" height="92" rx="12" fill="#0f1b2e" stroke="#1e3a5f"/>
+    <g stroke="#7dd3fc" stroke-width="2" fill="none">
+      <circle cx="243" cy="160" r="5"/><circle cx="271" cy="150" r="5"/><circle cx="271" cy="170" r="5"/>
+      <path d="M248 158 L266 151 M248 162 L266 169"/>
+    </g>
+    <text x="257" y="196" fill="#e2e8f0" font-weight="600">OpenRouter API</text>
+    <text x="257" y="214" fill="#94a3b8" font-size="11">models · prices · speed</text>
+    <text x="257" y="226" fill="#94a3b8" font-size="11">usage · benchmarks · tasks</text>
+    <!-- Hacker News -->
+    <rect x="352" y="136" width="158" height="92" rx="12" fill="#0f1b2e" stroke="#1e3a5f"/>
+    <g stroke="#7dd3fc" stroke-width="2" fill="none">
+      <path d="M415 148 h30 a4 4 0 0 1 4 4 v14 a4 4 0 0 1 -4 4 h-18 l-8 7 v-7 h-4 a4 4 0 0 1 -4 -4 v-14 a4 4 0 0 1 4 -4 z"/>
+    </g>
+    <text x="431" y="196" fill="#e2e8f0" font-weight="600">Hacker News</text>
+    <text x="431" y="214" fill="#94a3b8" font-size="11">stories · comments</text>
+    <text x="431" y="226" fill="#94a3b8" font-size="11">(Algolia API)</text>
+    <!-- RSS -->
+    <rect x="526" y="136" width="148" height="92" rx="12" fill="#0f1b2e" stroke="#1e3a5f"/>
+    <g stroke="#7dd3fc" stroke-width="2.4" fill="none" stroke-linecap="round">
+      <circle cx="590" cy="172" r="2.5" fill="#7dd3fc"/>
+      <path d="M590 160 a12 12 0 0 1 12 12"/><path d="M590 149 a23 23 0 0 1 23 23"/>
+    </g>
+    <text x="600" y="196" fill="#e2e8f0" font-weight="600">Vendor RSS</text>
+    <text x="600" y="214" fill="#94a3b8" font-size="11">OpenAI news</text>
+    <text x="600" y="226" fill="#94a3b8" font-size="11">DeepMind blog</text>
+    <!-- GDELT -->
+    <rect x="690" y="136" width="158" height="92" rx="12" fill="#0f1b2e" stroke="#1e3a5f"/>
+    <g stroke="#7dd3fc" stroke-width="2" fill="none">
+      <rect x="754" y="148" width="30" height="24" rx="3"/>
+      <path d="M759 155 h12 M759 160 h20 M759 165 h20"/>
+    </g>
+    <text x="769" y="196" fill="#e2e8f0" font-weight="600">GDELT</text>
+    <text x="769" y="214" fill="#94a3b8" font-size="11">press coverage</text>
+    <text x="769" y="226" fill="#94a3b8" font-size="11">(DOC 2.0 API)</text>
+    <!-- Vendor pages -->
+    <rect x="864" y="136" width="158" height="92" rx="12" fill="#0f1b2e" stroke="#1e3a5f"/>
+    <g stroke="#7dd3fc" stroke-width="2" fill="none">
+      <path d="M933 146 h14 l7 7 v21 h-21 z M947 146 v7 h7"/>
+      <path d="M937 160 h12 M937 165 h12 M937 170 h8"/>
+    </g>
+    <text x="943" y="196" fill="#e2e8f0" font-weight="600">Vendor pages</text>
+    <text x="943" y="214" fill="#94a3b8" font-size="11">deprecations · shutdowns</text>
+    <text x="943" y="226" fill="#94a3b8" font-size="11">release notes</text>
+  </g>
+
+  <!-- sources -> worker -->
+  <path d="M820 244 V284" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="830" y="270" font-size="12" fill="#94a3b8">fetched daily</text>
+
+  <!-- ============ 2. n8n + worker ============ -->
+  <rect x="100" y="290" width="370" height="104" rx="18" fill="none" stroke="#f97316" stroke-width="3" opacity="0.6" filter="url(#glow)"/>
+  <rect x="100" y="290" width="370" height="104" rx="18" fill="#f97316" fill-opacity="0.07" stroke="#fb923c" stroke-width="1.5"/>
+  <g stroke="#fb7185" stroke-width="2.5" fill="none">
+    <circle cx="130" cy="328" r="6"/><circle cx="156" cy="328" r="6"/><circle cx="184" cy="316" r="6"/><circle cx="184" cy="340" r="6"/>
+    <path d="M136 328 H150 M162 326 L178 318 M162 330 L178 338"/>
+  </g>
+  <text x="204" y="335" font-size="24" font-weight="700" fill="#fdba74">n8n</text>
+  <text x="256" y="333" font-size="14" fill="#e2e8f0">Orchestration (Docker)</text>
+  <text x="124" y="366" font-size="12.5" fill="#cbd5e1">Daily 10:00 Bangkok · hourly catch-up to 22:00</text>
+  <text x="124" y="383" font-size="12.5" fill="#cbd5e1">One node per task · retries · alert on DQ fail</text>
+
+  <path d="M470 342 H538" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="504" y="333" text-anchor="middle" font-size="12" fill="#94a3b8">HTTP /run</text>
+
+  <rect x="540" y="290" width="560" height="104" rx="18" fill="none" stroke="#eab308" stroke-width="3" opacity="0.5" filter="url(#glow)"/>
+  <rect x="540" y="290" width="560" height="104" rx="18" fill="#eab308" fill-opacity="0.06" stroke="#facc15" stroke-width="1.5"/>
+  <rect x="566" y="312" width="40" height="30" rx="6" fill="none" stroke="#fde047" stroke-width="2"/>
+  <path d="M573 322 l6 5 -6 5 M583 333 h12" stroke="#fde047" stroke-width="2" fill="none"/>
+  <text x="620" y="335" font-size="22" font-weight="700" fill="#fde047">Python worker</text>
+  <text x="790" y="333" font-size="14" fill="#e2e8f0">ingestion &amp; ML jobs (Docker)</text>
+  <text x="566" y="366" font-size="12.5" fill="#cbd5e1">Fetch · parse · map model IDs · upsert (idempotent) · back-fill missed days</text>
+  <text x="566" y="383" font-size="12.5" fill="#cbd5e1">Retry with backoff · honour rate limits · log every run</text>
+
+  <!-- worker -> stores -->
+  <path d="M700 394 V412 H340 V444" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="352" y="434" font-size="12" fill="#94a3b8">every response, unchanged</text>
+  <path d="M960 394 V444" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="970" y="428" font-size="12" fill="#94a3b8">typed upserts</text>
+
+  <!-- ============ 3. Stores ============ -->
+  <rect x="100" y="450" width="480" height="100" rx="18" fill="none" stroke="#22c55e" stroke-width="3" opacity="0.5" filter="url(#glow)"/>
+  <rect x="100" y="450" width="480" height="100" rx="18" fill="#22c55e" fill-opacity="0.06" stroke="#4ade80" stroke-width="1.5"/>
+  <path d="M146 468 C164 488 166 512 148 534 C130 512 130 488 146 468 z" fill="#22c55e" opacity="0.9"/>
+  <path d="M147 476 V540" stroke="#bbf7d0" stroke-width="1.5"/>
+  <text x="182" y="492" font-size="22" font-weight="700" fill="#86efac">MongoDB Atlas</text>
+  <text x="182" y="515" font-size="13.5" fill="#e2e8f0">Raw landing zone</text>
+  <text x="182" y="535" font-size="12.5" fill="#cbd5e1">raw_* collections · any day can be reprocessed</text>
+
+  <rect x="620" y="450" width="480" height="100" rx="18" fill="none" stroke="#10b981" stroke-width="3" opacity="0.5" filter="url(#glow)"/>
+  <rect x="620" y="450" width="480" height="100" rx="18" fill="#10b981" fill-opacity="0.06" stroke="#34d399" stroke-width="1.5"/>
+  <path d="M672 466 L648 504 H668 L660 536 L688 494 H668 z" fill="#34d399"/>
+  <text x="704" y="492" font-size="22" font-weight="700" fill="#6ee7b7">Supabase PostgreSQL</text>
+  <text x="704" y="515" font-size="13.5" fill="#e2e8f0">Modelled storage + SQL metrics</text>
+  <text x="704" y="535" font-size="12.5" fill="#cbd5e1">core (facts) · ops (runs, DQ) · mart (views)</text>
+
+  <!-- stores <-> analytics -->
+  <path d="M340 550 V604" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="352" y="582" font-size="12" fill="#94a3b8">HN comments</text>
+  <path d="M800 552 V604" stroke="#94a3b8" stroke-width="2" fill="none" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="812" y="582" font-size="12" fill="#94a3b8">read data · write scores</text>
+
+  <!-- ============ 4. NLP & analytics ============ -->
+  <rect x="100" y="610" width="1000" height="100" rx="18" fill="none" stroke="#3b82f6" stroke-width="3" opacity="0.55" filter="url(#glow)"/>
+  <rect x="100" y="610" width="1000" height="100" rx="18" fill="#3b82f6" fill-opacity="0.06" stroke="#60a5fa" stroke-width="1.5"/>
+  <polyline points="128,682 148,660 168,672 194,640" fill="none" stroke="#93c5fd" stroke-width="2.5" stroke-linejoin="round"/>
+  <g fill="#93c5fd"><circle cx="128" cy="682" r="4"/><circle cx="148" cy="660" r="4"/><circle cx="168" cy="672" r="4"/><circle cx="194" cy="640" r="4"/></g>
+  <text x="222" y="648" font-size="22" font-weight="700" fill="#93c5fd">NLP &amp; analytics</text>
+  <text x="222" y="674" font-size="13" fill="#e2e8f0">Sentiment + aspects (RoBERTa, runs locally on CPU) · intent rules · vendor matching</text>
+  <text x="222" y="694" font-size="13" fill="#e2e8f0">Reference price · blended price · value score · price-change events · data-quality checks</text>
+  <g fill="#60a5fa"><rect x="1032" y="664" width="12" height="28" rx="2"/><rect x="1050" y="648" width="12" height="44" rx="2"/><rect x="1068" y="634" width="12" height="58" rx="2" fill="#93c5fd"/></g>
+
+  <!-- supabase mart -> streamlit (right rail) -->
+  <path d="M1100 500 H1146 V815 H1104" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="1160" y="660" font-size="12" fill="#94a3b8" transform="rotate(90 1160 660)" text-anchor="middle">mart views · read-only role</text>
+
+  <!-- ============ 5. Streamlit ============ -->
+  <rect x="100" y="752" width="1000" height="140" rx="18" fill="none" stroke="#a855f7" stroke-width="3" opacity="0.6" filter="url(#glow)"/>
+  <rect x="100" y="752" width="1000" height="140" rx="18" fill="#a855f7" fill-opacity="0.07" stroke="#c084fc" stroke-width="1.5"/>
+  <path d="M126 808 L146 790 L158 806 L170 790 L190 808 L158 826 z" fill="#f87171"/>
+  <text x="204" y="808" font-size="24" font-weight="700" fill="#e9d5ff">Streamlit</text>
+  <text x="126" y="842" font-size="13.5" fill="#e2e8f0">Dashboard · Thai / English</text>
+  <text x="126" y="862" font-size="12.5" fill="#cbd5e1">6 pages · provenance on every number</text>
+  <line x1="438" y1="772" x2="438" y2="872" stroke="#6b21a8" stroke-width="1.5"/>
+
+  <!-- mini panels -->
+  <g font-size="11" fill="#cbd5e1">
+    <!-- quality vs price -->
+    <rect x="460" y="768" width="148" height="110" rx="10" fill="#140c24" stroke="#3b2560"/>
+    <text x="472" y="786">Quality vs price</text>
+    <line x1="474" y1="866" x2="596" y2="866" stroke="#475569"/><line x1="474" y1="796" x2="474" y2="866" stroke="#475569"/>
+    <g fill="#c084fc"><circle cx="490" cy="850" r="3.5"/><circle cx="505" cy="836" r="3.5"/><circle cx="522" cy="840" r="3.5"/><circle cx="538" cy="820" r="3.5"/><circle cx="556" cy="812" r="3.5"/><circle cx="572" cy="806" r="3.5" fill="#f0abfc"/><circle cx="584" cy="826" r="3.5"/><circle cx="530" cy="854" r="3.5"/></g>
+    <!-- usage share -->
+    <rect x="620" y="768" width="148" height="110" rx="10" fill="#140c24" stroke="#3b2560"/>
+    <text x="632" y="786">Usage share</text>
+    <path d="M634 866 V830 C660 826 680 838 700 828 C720 818 740 826 756 818 V866 z" fill="#7c3aed" opacity="0.85"/>
+    <path d="M634 830 V812 C660 806 680 818 700 808 C720 800 740 806 756 798 V818 C740 826 720 818 700 828 C680 838 660 826 634 830 z" fill="#a78bfa" opacity="0.85"/>
+    <path d="M634 812 V798 C660 794 680 800 700 794 C720 790 740 794 756 792 V798 C740 806 720 800 700 808 C680 818 660 806 634 812 z" fill="#f0abfc" opacity="0.8"/>
+    <!-- sentiment heatmap -->
+    <rect x="780" y="768" width="148" height="110" rx="10" fill="#140c24" stroke="#3b2560"/>
+    <text x="792" y="786">Sentiment by aspect</text>
+    <g>
+      <rect x="794" y="796" width="22" height="14" rx="2" fill="#ef4444" opacity="0.55"/><rect x="820" y="796" width="22" height="14" rx="2" fill="#ef4444" opacity="0.9"/><rect x="846" y="796" width="22" height="14" rx="2" fill="#3b82f6" opacity="0.6"/><rect x="872" y="796" width="22" height="14" rx="2" fill="#ef4444" opacity="0.35"/><rect x="898" y="796" width="18" height="14" rx="2" fill="#64748b" opacity="0.5"/>
+      <rect x="794" y="814" width="22" height="14" rx="2" fill="#3b82f6" opacity="0.4"/><rect x="820" y="814" width="22" height="14" rx="2" fill="#ef4444" opacity="0.5"/><rect x="846" y="814" width="22" height="14" rx="2" fill="#ef4444" opacity="0.25"/><rect x="872" y="814" width="22" height="14" rx="2" fill="#3b82f6" opacity="0.8"/><rect x="898" y="814" width="18" height="14" rx="2" fill="#ef4444" opacity="0.6"/>
+      <rect x="794" y="832" width="22" height="14" rx="2" fill="#ef4444" opacity="0.3"/><rect x="820" y="832" width="22" height="14" rx="2" fill="#64748b" opacity="0.5"/><rect x="846" y="832" width="22" height="14" rx="2" fill="#ef4444" opacity="0.7"/><rect x="872" y="832" width="22" height="14" rx="2" fill="#ef4444" opacity="0.4"/><rect x="898" y="832" width="18" height="14" rx="2" fill="#3b82f6" opacity="0.5"/>
+      <rect x="794" y="850" width="22" height="14" rx="2" fill="#ef4444" opacity="0.5"/><rect x="820" y="850" width="22" height="14" rx="2" fill="#3b82f6" opacity="0.3"/><rect x="846" y="850" width="22" height="14" rx="2" fill="#ef4444" opacity="0.4"/><rect x="872" y="850" width="22" height="14" rx="2" fill="#64748b" opacity="0.5"/><rect x="898" y="850" width="18" height="14" rx="2" fill="#ef4444" opacity="0.8"/>
+    </g>
+    <!-- lifecycle -->
+    <rect x="940" y="768" width="148" height="110" rx="10" fill="#140c24" stroke="#3b2560"/>
+    <text x="952" y="786">Model lifecycle</text>
+    <line x1="954" y1="832" x2="1076" y2="832" stroke="#475569" stroke-width="2"/>
+    <line x1="1012" y1="798" x2="1012" y2="866" stroke="#a855f7" stroke-dasharray="3 3"/>
+    <g fill="#a78bfa"><circle cx="964" cy="832" r="4"/><circle cx="984" cy="832" r="4"/><circle cx="998" cy="832" r="4"/></g>
+    <g fill="#f87171"><circle cx="1030" cy="832" r="4"/><circle cx="1050" cy="832" r="4"/><circle cx="1068" cy="832" r="4"/></g>
+    <text x="1016" y="806" font-size="10" fill="#94a3b8">today</text>
+    <text x="960" y="852" font-size="9.5" fill="#94a3b8">released</text>
+    <text x="1040" y="852" font-size="9.5" fill="#94a3b8">shutdown</text>
+  </g>
+
+  <!-- footer: labelling loop -->
+  <text x="600" y="930" text-anchor="middle" font-size="13" fill="#94a3b8">Separate labelling app → hand-labelled evaluation set → precision / recall / F1 for the sentiment model</text>
+</svg>

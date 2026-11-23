@@ -2,6 +2,8 @@
 
 **English** · [ภาษาไทย](README.th.md)
 
+![Model Radar architecture: data sources, n8n, Python worker, MongoDB, Supabase, NLP and analytics, Streamlit](docs/images/architecture.svg)
+
 Model Radar collects data on the AI models of five vendors **every day**, keeps the full history, and compares
 them in a bilingual (Thai / English) Streamlit dashboard: quality, price, value for money, speed, usage,
 lifecycle (releases and shutdowns), and what developers are saying.

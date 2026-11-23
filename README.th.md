@@ -2,6 +2,8 @@
 
 [English](README.md) · **ภาษาไทย**
 
+![สถาปัตยกรรม Model Radar: แหล่งข้อมูล, n8n, Python worker, MongoDB, Supabase, NLP และ analytics, Streamlit](docs/images/architecture.svg)
+
 Model Radar เก็บข้อมูลโมเดล AI ของ 5 ผู้ให้บริการ **ทุกวัน** เก็บประวัติไว้ทั้งหมด และเปรียบเทียบกันใน
 dashboard Streamlit สองภาษา (ไทย / อังกฤษ): คุณภาพ ราคา ความคุ้มค่า ความเร็ว การใช้งาน
 วงจรชีวิตโมเดล (เปิดตัวและปิดใช้งาน) และความเห็นของนักพัฒนา
