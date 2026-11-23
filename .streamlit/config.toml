@@ -1,0 +1,93 @@
+# Copy of app/.streamlit/config.toml for Streamlit Community Cloud, which runs from the repo root.
+# Keep the two files identical (local runs use app/.streamlit/config.toml).
+
+# AI Model Tracker theme — "ink & paper" (Thai UI): dark ink rail, warm paper ground, vendors carry the colour.
+# Chart categorical order = vendor names sorted A→Z (Anthropic, DeepSeek, Google, OpenAI, xAI);
+# charts pin that domain so a vendor keeps its colour on every page and in both modes.
+
+[server]
+runOnSave = true
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+# IBM Plex Sans Thai: one family for Thai and Latin, so mixed Thai/English labels sit on the same baseline.
+font = "'IBM Plex Sans Thai':https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap"
+headingFont = "'IBM Plex Sans Thai':https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@500;600;700&display=swap"
+codeFont = "'IBM Plex Mono':https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap"
+baseFontSize = 15
+baseFontWeight = 400
+headingFontSizes = ["32px", "22px", "18px", "16px", "15px", "13px"]
+headingFontWeights = [700, 600, 600, 600, 500, 500]
+metricValueFontSize = "1.75rem"
+metricValueFontWeight = 600
+baseRadius = "6px"
+buttonRadius = "6px"
+showWidgetBorder = true
+showSidebarBorder = false
+linkUnderline = false
+paddingTop = "1.25rem"
+paddingBottom = "3rem"
+
+[theme.light]
+primaryColor = "#2B3A55"
+backgroundColor = "#F7F6F2"
+secondaryBackgroundColor = "#EDEBE4"
+textColor = "#16181D"
+linkColor = "#2E4A86"
+borderColor = "#D9D6CC"
+codeBackgroundColor = "#EDEBE4"
+codeTextColor = "#2B3A55"
+greenColor = "#0F8F63"
+redColor = "#C2352B"
+orangeColor = "#C8603C"
+yellowColor = "#A16207"
+blueColor = "#2F6FE0"
+violetColor = "#6D3BD2"
+grayColor = "#5B6577"
+chartCategoricalColors = ["#C8603C", "#6D3BD2", "#2F6FE0", "#0F8F63", "#5B6577", "#A16207", "#0E7490", "#9F1239"]
+chartSequentialColors = ["#F3F1EA", "#E2E5EC", "#C9D1E0", "#A9B7D0", "#8499BD", "#617CA9", "#476395", "#344D7C", "#253A62", "#182847"]
+dataframeBorderColor = "#E2DFD6"
+dataframeHeaderBackgroundColor = "#EDEBE4"
+dataframeHeaderTextColor = "#16181D"
+
+[theme.dark]
+primaryColor = "#9DB4E3"
+backgroundColor = "#121418"
+secondaryBackgroundColor = "#1B1E24"
+textColor = "#ECEAE4"
+linkColor = "#9DB4E3"
+borderColor = "#2D313A"
+codeBackgroundColor = "#1B1E24"
+codeTextColor = "#C9D5EE"
+greenColor = "#3FCF98"
+redColor = "#F2766B"
+orangeColor = "#EE8A63"
+yellowColor = "#E8C35A"
+blueColor = "#6FA0FA"
+violetColor = "#A98BF5"
+grayColor = "#A3AEC2"
+chartCategoricalColors = ["#EE8A63", "#A98BF5", "#6FA0FA", "#3FCF98", "#A3AEC2", "#E8C35A", "#4CC3DB", "#F27A9B"]
+chartSequentialColors = ["#182847", "#253A62", "#344D7C", "#476395", "#617CA9", "#8499BD", "#A9B7D0", "#C9D1E0", "#E2E5EC", "#F3F1EA"]
+dataframeBorderColor = "#262A32"
+dataframeHeaderBackgroundColor = "#1B1E24"
+dataframeHeaderTextColor = "#ECEAE4"
+
+[theme.light.sidebar]
+backgroundColor = "#15181E"
+secondaryBackgroundColor = "#21252D"
+textColor = "#E9E7E1"
+borderColor = "#3A404C"
+primaryColor = "#C3D4FA"
+linkColor = "#9DB4E3"
+codeBackgroundColor = "#21252D"
+
+[theme.dark.sidebar]
+backgroundColor = "#0B0D10"
+secondaryBackgroundColor = "#181B21"
+textColor = "#E9E7E1"
+borderColor = "#343944"
+primaryColor = "#C3D4FA"
+linkColor = "#9DB4E3"
+codeBackgroundColor = "#181B21"
