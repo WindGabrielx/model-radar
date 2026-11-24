@@ -8,19 +8,36 @@ import streamlit as st
 
 TZ = ZoneInfo("Asia/Bangkok")
 TTL = 3600
+STAMP_TTL = 60   # how often to check whether the pipeline wrote new data
 VENDORS = ["Anthropic", "DeepSeek", "Google", "OpenAI", "xAI"]   # chart colour order (theme categorical)
 TIERS = ["top", "mid", "small", "unclassified"]
 DEFAULT_TIERS = ["top", "mid", "small"]
 
 
-def query(sql: str, params: dict | None = None) -> pd.DataFrame:
+def _conn():
     # Supabase's pooler drops idle connections; pre-ping + recycle replace dead ones instead of hanging,
     # and TCP keepalives / timeouts make a broken socket fail fast rather than block the page.
-    conn = st.connection("tracker", type="sql", pool_pre_ping=True, pool_recycle=300,
+    return st.connection("tracker", type="sql", pool_pre_ping=True, pool_recycle=300,
                          connect_args={"connect_timeout": 10, "keepalives": 1, "keepalives_idle": 30,
                                        "keepalives_interval": 10, "keepalives_count": 3,
                                        "options": "-c statement_timeout=30000"})
-    return conn.query(sql, params=params, ttl=TTL)
+
+
+def data_stamp() -> str:
+    """Changes whenever a pipeline step finishes or a sentiment evaluation is saved (checked every minute)."""
+    try:
+        df = _conn().query("""SELECT (SELECT max(finished_at) FROM ops.pipeline_run_log)::text
+                                     || '|' || coalesce((SELECT max(evaluated_at) FROM ops.model_eval)::text, '')
+                              AS stamp""", ttl=STAMP_TTL)
+        return str(df.iloc[0, 0])
+    except Exception:
+        return ""
+
+
+def query(sql: str, params: dict | None = None) -> pd.DataFrame:
+    # The stamp is part of the cached SQL text, so new pipeline data replaces the 1-hour cache within a minute
+    # (both locally and on Community Cloud) instead of waiting for the TTL.
+    return _conn().query(f"/* data:{data_stamp()} */\n{sql}", params=params, ttl=TTL)
 
 
 def to_bkk(s: pd.Series) -> pd.Series:
