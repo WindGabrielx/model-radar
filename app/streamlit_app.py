@@ -36,9 +36,10 @@ with st.sidebar:
     st.pills(_('ระดับรุ่น'), data.TIERS, selection_mode="multi", default=data.DEFAULT_TIERS, key="f_tiers",
              format_func=ui.TIER_TH.get,
              help=_("จัดกลุ่มด้วยมือใน seed/model_tiers.csv โมเดลใหม่จะเป็น 'ยังไม่จัดกลุ่ม' ก่อน"))
-    st.toggle(_('รวมโมเดลสร้างภาพ'), key="f_images", value=False)
+    st.toggle(_('รวมโมเดลสร้างภาพ'), key="f_images", value=False,
+              help=_('โมเดลสร้างภาพไม่มีคะแนนคุณภาพ จึงไม่อยู่ในการ์ด KPI และกราฟคุณภาพ/ความคุ้มค่า · เห็นได้ในตาราง “โมเดลทั้งหมด” หน้าราคาและความคุ้มค่า'))
     st.toggle(_('รวมโมเดลที่ปิดแล้ว'), key="f_retired", value=False,
-              help=_('โมเดลที่ผู้ให้บริการปิดไปแล้ว หรือหายจาก OpenRouter ซ่อนไว้เป็นค่าเริ่มต้น เพราะใช้งานผ่าน API ของผู้ให้บริการไม่ได้แล้ว'))
+              help=_('โมเดลที่ผู้ให้บริการปิดไปแล้ว หรือหายจาก OpenRouter ซ่อนไว้เป็นค่าเริ่มต้น เพราะใช้งานผ่าน API ของผู้ให้บริการไม่ได้แล้ว · เปิดแล้วจะเห็นในตาราง “โมเดลทั้งหมด” หน้าราคาและความคุ้มค่า (ป้าย “ปิดแล้ว”)'))
     st.button(_('แสดงทั้งหมด'), icon=":material/filter_alt_off:", on_click=data.reset_filters, width="stretch",
               key="reset_sidebar")
     st.space("medium")

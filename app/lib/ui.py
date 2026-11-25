@@ -194,6 +194,18 @@ def filter_note(n_models: int) -> None:
         parts.append(_('กำลังแสดงโมเดลที่ปิดใช้งานแล้ว {0} ตัว (ป้าย “ปิดแล้ว”) ใช้งานผ่าน API ของผู้ให้บริการไม่ได้แล้ว').format(c["retired"]))
     if parts:
         st.caption(" · ".join(parts))
+    # The two sidebar switches mostly add models without a quality score, which the KPI cards and quality/value
+    # charts leave out; say where they show up so a switch never looks broken.
+    extra = []
+    if st.session_state.get("f_images", False) and c["images"]:
+        extra.append(_('โมเดลสร้างภาพ {0} ตัว').format(c["images"]))
+    if st.session_state.get("f_retired", False) and c["retired"]:
+        extra.append(_('โมเดลที่ปิดแล้ว {0} ตัว').format(c["retired"]))
+    if extra:
+        where = (_('ดูได้ในตาราง “โมเดลทั้งหมด” ด้านล่าง') if st.session_state.get("_page") == "price_value"
+                 else _('ดูได้ในตาราง “โมเดลทั้งหมด” หน้าราคาและความคุ้มค่า'))
+        st.info(_('กำลังรวม{0} · ส่วนใหญ่ไม่มีคะแนนคุณภาพ จึงไม่อยู่ในการ์ดและกราฟคุณภาพ/ความคุ้มค่า · {1}').format(
+            (" และ " if lang() != "EN" else " and ").join(extra), where), icon=":material/info:")
 
 
 def glossary() -> None:

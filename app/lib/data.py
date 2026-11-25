@@ -172,9 +172,11 @@ def filtered_models() -> pd.DataFrame:
 
 
 def status_counts() -> dict:
-    """Retiring / hidden-retired counts within the current vendor, tier and image filters."""
+    """Retiring / retired / image-model counts within the current vendor, tier and image filters."""
     df = _in_scope(models())
-    return {"retiring": int((df["status"] == "retiring").sum()), "retired": int((df["status"] == "retired").sum())}
+    shown = df if st.session_state.get("f_retired", False) else df[df["status"] != "retired"]
+    return {"retiring": int((df["status"] == "retiring").sum()), "retired": int((df["status"] == "retired").sum()),
+            "images": int((shown["output_type"] != "text").sum())}
 
 
 def selected_vendors() -> list[str]:
