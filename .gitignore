@@ -39,3 +39,6 @@ config/
 
 # Temp file written by the labelling app during an atomic save
 data/labels/*.tmp
+
+# Personal notes on local services and ports
+LOCAL_SERVICES.md
