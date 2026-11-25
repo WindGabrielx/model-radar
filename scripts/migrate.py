@@ -54,6 +54,27 @@ def load_seeds(conn) -> None:
         with conn.cursor() as cur:
             for r in trows:
                 cur.execute("UPDATE core.dim_model SET tier = %s WHERE model_id = %s", (r["tier"], r["model_id"]))
+    # Hand overrides of the computed model status (mart.v_model_status). The file is the full list:
+    # a line removed from it removes the override.
+    overrides = ROOT / "seed" / "model_overrides.csv"
+    if overrides.exists():
+        with open(overrides, encoding="utf-8") as fh:
+            orows = [{"model_id": r["model_id"].strip(), "status": (r.get("status") or "").strip() or None,
+                      "retire_date": (r.get("retire_date") or "").strip() or None,
+                      "replacement": (r.get("replacement") or "").strip() or None,
+                      "note": (r.get("note") or "").strip() or "manual override"}
+                     for r in csv.DictReader(fh) if (r.get("model_id") or "").strip()]
+        with conn.cursor() as cur:
+            cur.execute("SELECT model_id FROM core.dim_model WHERE model_id = ANY(%s)", ([r["model_id"] for r in orows],))
+            known = {x[0] for x in cur.fetchall()}
+            for r in orows:
+                if r["model_id"] not in known:
+                    print(f"model_overrides.csv: unknown model_id {r['model_id']} (skipped)")
+            orows = [r for r in orows if r["model_id"] in known]
+            cur.execute("DELETE FROM core.model_override WHERE NOT (model_id = ANY(%s))", ([r["model_id"] for r in orows],))
+            if orows:
+                upsert(cur, "core.model_override", orows, ["model_id"])
+        print(f"seeded {len(orows)} model overrides")
     conn.commit()
     print(f"seeded {len(rows)} vendors")
 

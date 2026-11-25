@@ -396,5 +396,14 @@
  "โมเดลจากบริษัทอื่นรวมกัน: {0} ใน {1} → {2} ใน {3}": "Models from other companies combined: {0} in {1} → {2} in {3}",
  "ไตรมาส": "Quarter",
  "ผู้นำใน 5 เจ้า": "Leader of the five",
- "ส่วนแบ่ง tokens รายไตรมาสของแต่ละผู้ให้บริการ": "Quarterly token share per vendor"
+ "ส่วนแบ่ง tokens รายไตรมาสของแต่ละผู้ให้บริการ": "Quarterly token share per vendor",
+ "ปิด {0}": "closes {0}",
+ "ปิดแล้ว": "shut down",
+ "รวมโมเดลที่ปิดแล้ว": "Include shut-down models",
+ "โมเดลที่ผู้ให้บริการปิดไปแล้ว หรือหายจาก OpenRouter ซ่อนไว้เป็นค่าเริ่มต้น เพราะใช้งานผ่าน API ของผู้ให้บริการไม่ได้แล้ว": "Models the vendor has shut down, or that left OpenRouter, are hidden by default because they can no longer be used through the vendor's API",
+ ":material/event_busy: {0} โมเดลจะถูกปิดภายใน 30 วัน (มีป้าย “ปิด …” ต่อท้ายชื่อ)": ":material/event_busy: {0} models shut down within 30 days (marked “closes …” after the name)",
+ "ซ่อนโมเดลที่ปิดใช้งานแล้ว {0} ตัว · เปิดดูได้ที่ “รวมโมเดลที่ปิดแล้ว” ในแถบซ้าย": "{0} shut-down models hidden · show them with “Include shut-down models” in the sidebar",
+ "กำลังแสดงโมเดลที่ปิดใช้งานแล้ว {0} ตัว (ป้าย “ปิดแล้ว”) ใช้งานผ่าน API ของผู้ให้บริการไม่ได้แล้ว": "Showing {0} shut-down models (marked “shut down”); they can no longer be used through the vendor's API",
+ "สถานะโมเดล": "Model status",
+ "คำนวณทุกวันจากประกาศปิดโมเดลของผู้ให้บริการ (แหล่งหลัก) และวันหมดอายุที่ OpenRouter แจ้ง · ใกล้ปิด = ปิดภายใน 30 วัน มีป้ายต่อท้ายชื่อ · ปิดแล้ว = เลยวันปิด หรือหายจาก OpenRouter ซ่อนไว้เป็นค่าเริ่มต้น เพราะ OpenRouter อาจยังแสดงโมเดลที่เจ้าของปิดไปแล้ว · วันที่แบบ “ไม่เร็วกว่า” ไม่ทำให้โมเดลถูกซ่อน": "Computed daily from the vendors' shutdown notices (primary) and OpenRouter's expiration dates · Retiring = shuts down within 30 days, labelled after the name · Shut down = past the date or gone from OpenRouter, hidden by default because OpenRouter may still list a model its vendor has closed · “not sooner than” dates never hide a model"
 }

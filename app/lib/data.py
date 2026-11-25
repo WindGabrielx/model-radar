@@ -46,7 +46,11 @@ def to_bkk(s: pd.Series) -> pd.Series:
 
 # ------------------------------------------------------------------ loaders (cached by conn.query)
 def models() -> pd.DataFrame:
-    df = query("SELECT * FROM mart.v_model_current")
+    # Status (active / retiring / retired) comes from mart.v_model_status: official shutdown notices,
+    # OpenRouter's expiration_date and whether the model is still listed (migration 015).
+    df = query("""SELECT m.*, s.status, s.status_reason, s.retire_date, s.days_left, s.replacement AS status_replacement
+                  FROM mart.v_model_current m LEFT JOIN mart.v_model_status s USING (model_id)""")
+    df["status"] = df["status"].fillna("active")
     num = ["input_price_per_m", "output_price_per_m", "cache_read_price_per_m", "batch_input_price_per_m",
            "batch_output_price_per_m", "blended_price_per_m", "batch_blended_price_per_m", "quality",
            "coding_index", "agentic_index", "value_score", "throughput_p50", "latency_p50", "latency_stability",
@@ -137,14 +141,40 @@ def as_of() -> dict:
 
 
 # ------------------------------------------------------------------ global filters (set in streamlit_app.py)
-def filtered_models() -> pd.DataFrame:
-    df = models()
+def _in_scope(df: pd.DataFrame) -> pd.DataFrame:
     vendors = st.session_state.get("f_vendors") or VENDORS
     tiers = st.session_state.get("f_tiers") or TIERS
-    df = df[df["vendor_name"].isin(vendors) & df["tier"].isin(tiers) & df["is_active"]]
+    df = df[df["vendor_name"].isin(vendors) & df["tier"].isin(tiers)]
     if not st.session_state.get("f_images", False):
         df = df[df["output_type"] == "text"]
     return df
+
+
+def filtered_models() -> pd.DataFrame:
+    """Models for the comparison pages. Retired models (shut down by the vendor, or gone from OpenRouter) are hidden
+    unless the sidebar toggle includes them; retiring and retired models carry a label after their name, so every
+    table, chart and picker that shows the name also shows the warning."""
+    from lib import ui   # local import: ui imports data
+    from lib.i18n import _
+
+    df = _in_scope(models())
+    if not st.session_state.get("f_retired", False):
+        df = df[df["status"] != "retired"]
+
+    def label(r) -> str:
+        if r["status"] == "retiring":
+            return f"{r['model_name']} · " + _('ปิด {0}').format(ui.short_date(r["retire_date"]))
+        if r["status"] == "retired":
+            return f"{r['model_name']} · " + _('ปิดแล้ว')
+        return r["model_name"]
+
+    return df.assign(model_name=df.apply(label, axis=1)) if len(df) else df
+
+
+def status_counts() -> dict:
+    """Retiring / hidden-retired counts within the current vendor, tier and image filters."""
+    df = _in_scope(models())
+    return {"retiring": int((df["status"] == "retiring").sum()), "retired": int((df["status"] == "retired").sum())}
 
 
 def selected_vendors() -> list[str]:
@@ -155,6 +185,7 @@ def reset_filters() -> None:
     st.session_state["f_vendors"] = list(VENDORS)
     st.session_state["f_tiers"] = list(DEFAULT_TIERS)
     st.session_state["f_images"] = False
+    st.session_state["f_retired"] = False
 
 
 def pipeline_runs() -> pd.DataFrame:

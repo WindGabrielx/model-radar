@@ -142,7 +142,8 @@ Applied in the worker when populating `core.dim_model`:
 - **Aliases** whose id starts with `~` (e.g. `~x-ai/grok-latest`) are skipped.
 - **Modality:** use `architecture.output_modalities` to set `output_type` = `text` or `image` (image models are kept but filtered out by default in the UI).
 - **Tier** (`top` / `mid` / `small`) is curated by hand in `seed/model_tiers.csv`; unknown new models default to `unclassified` and are listed for review.
-- **Join keys:** usage and benchmarks use `model_permaslug`; map to `dim_model` through `core.map_model_alias` (exact match on canonical_slug first, then a reviewed fuzzy match). Lifecycle pages use vendor API names (e.g. `claude-opus-5-5`, OpenRouter `anthropic/claude-opus-5.5`) — map through the same alias table.
+- **Join keys:** usage and benchmarks use `model_permaslug`; map to `dim_model` through `core.map_model_alias` (exact match on canonical_slug first, then a reviewed fuzzy match). Lifecycle pages use vendor API names (e.g. `claude-opus-5-5`, OpenRouter `anthropic/claude-opus-5.5`) — map through the same alias table. A dated snapshot name (`gpt-5-2025-08-07`, `claude-sonnet-4-5-20250929`) maps only when its words and **date stamp** equal the model's OpenRouter `canonical_slug` (`openai/gpt-5-2025-08-07`, `anthropic/claude-4.5-sonnet-20250929`), so a retired old snapshot never retires an alias that now points to a newer one. Stored events still unmapped are re-mapped every run.
+- **Availability status** (`mart.v_model_status`): `active` / `retiring` (firm shutdown within 30 days) / `retired` (date passed, or gone from OpenRouter). Retired models are hidden in the dashboard by default even if OpenRouter still lists them. Cases the rules get wrong are fixed by hand in `seed/model_overrides.csv` (model_id, status, retire_date, replacement, note — the file is the full list).
 
 ---
 
@@ -216,6 +217,7 @@ Core tables (minimum; migrations in `supabase/migrations/`):
 | `core.fact_benchmark_snapshot` | (snapshot_date, source, model_permaslug) | model_id, intelligence_index, coding_index, agentic_index, extra jsonb |
 | `core.fact_task_share` | (as_of, task_tag) | name, macro_category, usage_share, token_share, top_models jsonb |
 | `core.fact_lifecycle_event` | (vendor_id, model_api_name, event_type, event_date) | model_id, announced_date, replacement, source_url, source_type (`official`/`derived`) |
+| `core.model_override` | model_id | status, retire_date, replacement, note (loaded from `seed/model_overrides.csv`) |
 | `core.fact_news_item` | news_id | source (`hn`/`rss_openai`/`rss_deepmind`/`gdelt`), title, url, published_at, points, num_comments |
 | `core.bridge_news_vendor` | (news_id, vendor_id) | match_rule |
 | `core.fact_comment_sentiment` | (comment_id, vendor_id, aspect) | story_id, published_at, polarity, intent, confidence, model_version |
@@ -226,7 +228,7 @@ Core tables (minimum; migrations in `supabase/migrations/`):
 Event types for `fact_lifecycle_event`: `released`, `deprecated`, `retired`, `price_change`, `first_seen_openrouter`, `removed_from_openrouter`.
 
 Mart views (Streamlit reads only these):
-`mart.v_model_current`, `mart.v_price_history`, `mart.v_value_score`, `mart.v_speed_current`, `mart.v_usage_vendor_daily`, `mart.v_task_share_latest`, `mart.v_news_latest`, `mart.v_sentiment_weekly`, `mart.v_lifecycle_timeline`, `mart.v_pipeline_health`.
+`mart.v_model_current`, `mart.v_model_status`, `mart.v_price_history`, `mart.v_value_score`, `mart.v_speed_current`, `mart.v_usage_vendor_daily`, `mart.v_task_share_latest`, `mart.v_news_latest`, `mart.v_sentiment_weekly`, `mart.v_lifecycle_timeline`, `mart.v_pipeline_health`.
 
 ---
 
@@ -245,6 +247,7 @@ Mart views (Streamlit reads only these):
 | Composite score (UI only) | `w_q·norm(quality) + w_p·norm(1/blended) + w_s·norm(throughput)`, min-max normalised within the current filter; default weights 0.5 / 0.3 / 0.2, user-adjustable | derived |
 | **Usage share** | model (or vendor) `total_tokens` ÷ sum of all rows that day incl. `other` | third-party, derived share |
 | Price change | any day where input or output price differs from the previous snapshot → `price_change` event | derived |
+| **Model status** | retire date = earliest **firm** official shutdown (tentative "not sooner than" dates excluded) or OpenRouter `expiration_date`, whichever is first (a manual override wins). `retired` if that date has passed or the model left OpenRouter; `retiring` if within 30 days; else `active`. Retired models are hidden by default; retiring ones carry "closes <date>" after the name | official, derived |
 | Sentiment score | mean of polarity (+1 / 0 / −1, `mixed` = 0) over comments in the window, per vendor (and per aspect) | derived (ML) |
 
 Always show composite scores **together with** the per-dimension values. Never show the composite alone.
@@ -351,6 +354,7 @@ Every external call: retry 3× with exponential backoff, honour `Retry-After`. A
 | Benchmark rows with no `dim_model` mapping | warn (list for review) |
 | Raw document count = rows loaded for the run | warn |
 | Sentiment model version changed without a new eval report | warn |
+| Model shut down by its vendor but still listed on OpenRouter, or shutting down within 14 days (`model_status`) | warn (listed; already hidden in the UI) |
 
 ---
 
@@ -410,7 +414,7 @@ ai-model-tracker/
 ├── n8n/workflows/            # exported JSON, no credentials
 ├── mongodb/init_indexes.js
 ├── supabase/migrations/      # 001_schemas.sql, 002_core.sql, ...
-├── seed/                     # dim_vendor.csv, model_tiers.csv
+├── seed/                     # dim_vendor.csv, model_tiers.csv, model_overrides.csv
 ├── worker/                   # Dockerfile, jobs/ (matching, sentiment, scores)
 ├── data/labels/              # hand-labelled evaluation set
 ├── reports/                  # sentiment_eval.md, analyses

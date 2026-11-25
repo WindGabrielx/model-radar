@@ -192,24 +192,64 @@ PARSERS = {"lifecycle_anthropic": parse_anthropic, "lifecycle_openai": parse_ope
            "lifecycle_google": parse_google, "lifecycle_deepseek": parse_deepseek}
 
 
+PREFIX = {"openai": "openai/", "anthropic": "anthropic/", "google": "google/", "deepseek": "deepseek/", "xai": "x-ai/"}
+_DATE = re.compile(r"[-_](\d{4})-?(\d{2})-?(\d{2})$")
+
+
+def _snapshot_key(name: str) -> tuple[frozenset, str] | None:
+    """('claude-sonnet-4-5-20250929') → ({claude, sonnet, 4, 5}, '20250929'); None when there is no date stamp.
+    Word order is ignored because OpenRouter's canonical slugs reorder words (claude-4.5-sonnet-20250929)."""
+    n = name.lower().split("/")[-1]
+    m = _DATE.search(n)
+    if not m:
+        return None
+    return frozenset(t for t in re.split(r"[-._]", n[:m.start()]) if t), "".join(m.groups())
+
+
 def _map_models(cur, events: list[dict]) -> None:
-    """Exact match after documented normalisation: vendor prefix + hyphenated version → dotted
-    (claude-opus-5-5 → anthropic/claude-opus-5.5). Unmatched names stay NULL for review."""
-    cur.execute("SELECT model_id, vendor_id FROM core.dim_model")
-    known = {mid: v for mid, v in cur.fetchall()}
-    prefix = {"openai": "openai/", "anthropic": "anthropic/", "google": "google/", "deepseek": "deepseek/", "xai": "x-ai/"}
+    """Map vendor API names to dim_model, exact rules only (CLAUDE.md §5); unmatched names stay NULL for review.
+    1. vendor prefix + name, hyphenated version → dotted (claude-opus-5-5 → anthropic/claude-opus-5.5).
+    2. dated snapshot: same words and the SAME date stamp as the model's OpenRouter canonical_slug
+       (gpt-5-2025-08-07 → openai/gpt-5, whose canonical slug is openai/gpt-5-2025-08-07). A retired old snapshot
+       never maps to an alias that now points at a newer snapshot, because the dates differ."""
+    cur.execute("SELECT model_id, vendor_id, canonical_slug FROM core.dim_model")
+    dims = cur.fetchall()
+    known = {mid for mid, _, _ in dims}
+    by_snapshot = {}
+    for mid, vendor, slug in dims:
+        key = _snapshot_key(slug or "")
+        if key:
+            by_snapshot[(vendor, key)] = mid
     aliases = []
     for e in events:
         n = e["model_api_name"].lower()
-        cands = [prefix[e["vendor_id"]] + n, prefix[e["vendor_id"]] + re.sub(r"(?<=\d)-(?=\d)", ".", n)]
-        for c in cands:
-            if c in known:
-                e["model_id"] = c
-                aliases.append({"alias": e["model_api_name"], "alias_source": f"api_name_{e['vendor_id']}",
-                                "model_id": c, "match_method": "exact"})
-                break
+        cands = [PREFIX[e["vendor_id"]] + n, PREFIX[e["vendor_id"]] + re.sub(r"(?<=\d)-(?=\d)", ".", n)]
+        hit = next((c for c in cands if c in known), None)
+        if hit is None:
+            key = _snapshot_key(n)
+            hit = by_snapshot.get((e["vendor_id"], key)) if key else None
+        if hit:
+            e["model_id"] = hit
+            aliases.append({"alias": e["model_api_name"], "alias_source": f"api_name_{e['vendor_id']}",
+                            "model_id": hit, "match_method": "exact"})
     upsert(cur, "core.map_model_alias", list({a["alias"] + a["alias_source"]: a for a in aliases}.values()),
            ["alias", "alias_source"])
+
+
+def remap_unmapped(cur) -> int:
+    """Events are parsed only when a page changes, so re-map stored events that are still unmatched every run
+    (new models appear on OpenRouter after their shutdown notice was published)."""
+    cur.execute("""SELECT vendor_id, model_api_name, event_type, event_date FROM core.fact_lifecycle_event
+                   WHERE model_id IS NULL AND source_type = 'official'""")
+    events = [{"vendor_id": v, "model_api_name": n, "event_type": t, "event_date": d, "model_id": None}
+              for v, n, t, d in cur.fetchall()]
+    _map_models(cur, events)
+    mapped = [e for e in events if e["model_id"]]
+    for e in mapped:
+        cur.execute("""UPDATE core.fact_lifecycle_event SET model_id = %s WHERE vendor_id = %s AND model_api_name = %s
+                       AND event_type = %s AND event_date = %s""",
+                    (e["model_id"], e["vendor_id"], e["model_api_name"], e["event_type"], e["event_date"]))
+    return len(mapped)
 
 
 def lifecycle_pages(conn, run_id: str, raw: RawStore, res: JobResult, force: bool = False) -> list[dict]:
@@ -258,4 +298,7 @@ def lifecycle_pages(conn, run_id: str, raw: RawStore, res: JobResult, force: boo
         upsert(cur, "ops.source_page_hash", [{"source": source, "fetched_date": today, "content_hash": h,
                                               "changed": changed, "rows_parsed": rows if rows is not None else -1}],
                ["source", "fetched_date"])
+    remapped = remap_unmapped(cur)
+    if remapped:
+        res.notes.append(f"{remapped} stored events newly mapped to a model")
     return dq

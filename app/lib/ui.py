@@ -151,6 +151,15 @@ def th_date(d, with_time: bool = False) -> str:
     return s + (_(' {0:%H:%M} น.').format(d) if with_time else "")
 
 
+def short_date(d) -> str:
+    """'30 พ.ย.' / '30 Nov' — for labels after a model name; adds the year only when it is not this year."""
+    if d is None or pd.isna(d):
+        return "–"
+    d = pd.Timestamp(d)
+    year = "" if d.year == pd.Timestamp.now(tz=data.TZ).year else f" {d.year}"
+    return (f"{d.day} {d:%b}" if lang() == "EN" else f"{d.day} {TH_MONTHS[d.month - 1]}") + year
+
+
 def freshness() -> dict:
     a = data.as_of()
     parts = []
@@ -174,6 +183,17 @@ def filter_note(n_models: int) -> None:
         if len(vendors) < len(data.VENDORS) or set(st.session_state.get("f_tiers") or []) != set(data.DEFAULT_TIERS):
             st.button(_('ล้างตัวกรอง'), icon=":material/filter_alt_off:", type="tertiary", on_click=data.reset_filters,
                       key=f"reset_{st.session_state.get('_page', 'x')}")
+    # Availability: models shut down by the vendor are hidden by default, models closing soon carry a label.
+    c = data.status_counts()
+    parts = []
+    if c["retiring"]:
+        parts.append(_(':material/event_busy: {0} โมเดลจะถูกปิดภายใน 30 วัน (มีป้าย “ปิด …” ต่อท้ายชื่อ)').format(c["retiring"]))
+    if c["retired"] and not st.session_state.get("f_retired", False):
+        parts.append(_('ซ่อนโมเดลที่ปิดใช้งานแล้ว {0} ตัว · เปิดดูได้ที่ “รวมโมเดลที่ปิดแล้ว” ในแถบซ้าย').format(c["retired"]))
+    elif c["retired"]:
+        parts.append(_('กำลังแสดงโมเดลที่ปิดใช้งานแล้ว {0} ตัว (ป้าย “ปิดแล้ว”) ใช้งานผ่าน API ของผู้ให้บริการไม่ได้แล้ว').format(c["retired"]))
+    if parts:
+        st.caption(" · ".join(parts))
 
 
 def glossary() -> None:
@@ -192,6 +212,8 @@ def glossary() -> None:
              _('tokens ของโมเดล ÷ tokens ทั้งหมดในวันนั้นบน OpenRouter ไม่ใช่จำนวนผู้ใช้ และไม่ใช่ส่วนแบ่งตลาด')),
             (_('ความเห็นนักพัฒนา'), "derived",
              _('ค่าเฉลี่ยของความเห็นในคอมเมนต์ Hacker News (+1 บวก, 0 กลางๆ หรือปนกัน, −1 ลบ) ให้คะแนนด้วยโมเดลในเครื่อง')),
+            (_('สถานะโมเดล'), "official",
+             _('คำนวณทุกวันจากประกาศปิดโมเดลของผู้ให้บริการ (แหล่งหลัก) และวันหมดอายุที่ OpenRouter แจ้ง · ใกล้ปิด = ปิดภายใน 30 วัน มีป้ายต่อท้ายชื่อ · ปิดแล้ว = เลยวันปิด หรือหายจาก OpenRouter ซ่อนไว้เป็นค่าเริ่มต้น เพราะ OpenRouter อาจยังแสดงโมเดลที่เจ้าของปิดไปแล้ว · วันที่แบบ “ไม่เร็วกว่า” ไม่ทำให้โมเดลถูกซ่อน')),
             (_('รุ่นท็อป / รุ่นกลาง / รุ่นเล็ก'), "derived",
              _('ระดับรุ่นของแต่ละโมเดล ใช้เทียบของระดับเดียวกัน เช่น รุ่นท็อป = รุ่นที่เก่งที่สุดและแพงที่สุดของแต่ละเจ้า (Opus, GPT Astra, Gemini Neon) จัดกลุ่มไว้ใน seed/model_tiers.csv')),
             (_('1M tokens'), "derived",

@@ -47,6 +47,11 @@ Every number is tagged with its provenance — **Official** (vendor), **Third-pa
 Analysis) or **Derived** (calculated here) — and a metric glossary is one click away. The whole UI switches
 between **Thai and English** (`?lang=EN` in the URL opens English).
 
+**No retired models presented as usable.** Every model gets a daily availability status from the vendors' official
+shutdown notices and OpenRouter's expiration dates. Models the vendor has already shut down are hidden by default,
+even when OpenRouter still lists them, and models closing within 30 days carry a **"closes 30 Nov"** label after
+their name in every table, chart and picker (a sidebar switch shows the retired ones again).
+
 ### Labelling tool
 
 A separate Streamlit app in `labeler/` is used to hand-label a fixed sample of 300 Hacker News comments
@@ -63,7 +68,7 @@ only and never touches the databases, so the dashboard stays read-only.
 - **Raw first:** every API response is stored unchanged in MongoDB before it is transformed, so any day can be reprocessed.
 - **Idempotent:** every write is an upsert on natural keys; re-running a day never duplicates.
 - **Data-quality checks** after every run (key validity, model-count drop, >50 % price moves, duplicates, parse
-  failures, unmapped benchmarks, sentiment model evaluated, failed tasks); a failed check marks the n8n execution red.
+  failures, unmapped benchmarks, sentiment model evaluated, shut-down models still listed, failed tasks); a failed check marks the n8n execution red.
 
 ---
 
@@ -173,6 +178,7 @@ marks remain trademarks of their owners.
 | **Composite score** | `w_q·norm(quality) + w_p·norm(1/price) + w_s·norm(speed)`, min-max scaled within the current filter, weights set by the user; always shown next to the real values. |
 | **Usage share** | A vendor's tokens ÷ all tokens that day on OpenRouter (incl. "other"). OpenRouter traffic only: not users, not market share. Retired models are attributed to their vendor by OpenRouter prefix. |
 | **Price change** | A change in the vendor's own endpoint price vs its previous snapshot. If days were missed, the event says the change happened "between date A and date B". |
+| **Model status** | Retire date = the earliest firm official shutdown or OpenRouter's `expiration_date`. *Retired* if the date has passed or the model left OpenRouter (hidden by default); *retiring* if within 30 days (labelled); else *active*. Tentative dates never hide a model. Official names map to OpenRouter models only when the words and the snapshot date match, so retiring an old snapshot never hides a model that now points to a newer one. Edge cases: `seed/model_overrides.csv`. |
 | **Lifecycle** | Official vendor pages are primary; "first seen" / "removed from OpenRouter" are secondary, derived signals. "Not sooner than" / "earliest possible" dates are kept but flagged as tentative. |
 | **Sentiment** (model `v0.1`) | RoBERTa sentiment on each comment and on each clause that mentions an aspect (clauses split at *but / however / although*), so "great code, but too expensive" gives coding = positive and pricing = negative; overall = *mixed* when both appear. Aspects (10) by keyword lexicon, intent (comparison, recommendation, complaint, question, informational) by rules. A comment counts for a vendor only if it names the vendor, or sits in a story about a single vendor. |
 | **Vendor matching for news** | A vendor keyword **and** a context term (e.g. "Gemini" + Google/AI/LLM), because "Gemini", "Claude" and "GPT" are ambiguous words. |
@@ -196,6 +202,8 @@ marks sentiment as **not evaluated yet**.
 
 **Lifecycle**
 - **43** model IDs have an official shutdown date within the next 90 days; the next one is `claude-sonnet-4-5-20250929` on **30 Nov 2026**.
+- **6** models were already shut down by their vendor yet still listed on OpenRouter (e.g. Claude Opus 4.1 since 5 Aug 2026,
+  Gemini 3.1 Flash Lite Preview since 25 May); they are now hidden, with 1 more that left OpenRouter. **9** more close within 30 days (GPT-5, o3, Claude Sonnet 4.5 …).
 - 295 official lifecycle events parsed from the five vendor pages, plus 126 derived OpenRouter events.
 
 **Usage on OpenRouter (Jan 2025 → Nov 2026)**
@@ -258,9 +266,9 @@ python scripts/eval_sentiment.py           # evaluate → reports/sentiment_eval
 ├── labeler/               Streamlit labelling tool (writes data/labels/ only)
 ├── worker/                Python worker: run_daily.py, server.py (HTTP trigger for n8n), jobs/, tracker/
 ├── n8n/workflows/         00_master.json (exported, no credentials)
-├── supabase/migrations/   001–014 numbered SQL migrations (schemas, tables, mart views)
+├── supabase/migrations/   001–015 numbered SQL migrations (schemas, tables, mart views)
 ├── mongodb/               init_indexes.js
-├── seed/                  dim_vendor.csv, model_tiers.csv
+├── seed/                  dim_vendor.csv, model_tiers.csv, model_overrides.csv (manual status fixes)
 ├── scripts/               migrate, test_keys, backfill_usage, export_label_sample, eval_sentiment, …
 ├── data/labels/           evaluation sample and hand labels
 ├── CLAUDE.md              project rules, data model and metric definitions (source of truth)

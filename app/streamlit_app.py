@@ -37,6 +37,8 @@ with st.sidebar:
              format_func=ui.TIER_TH.get,
              help=_("จัดกลุ่มด้วยมือใน seed/model_tiers.csv โมเดลใหม่จะเป็น 'ยังไม่จัดกลุ่ม' ก่อน"))
     st.toggle(_('รวมโมเดลสร้างภาพ'), key="f_images", value=False)
+    st.toggle(_('รวมโมเดลที่ปิดแล้ว'), key="f_retired", value=False,
+              help=_('โมเดลที่ผู้ให้บริการปิดไปแล้ว หรือหายจาก OpenRouter ซ่อนไว้เป็นค่าเริ่มต้น เพราะใช้งานผ่าน API ของผู้ให้บริการไม่ได้แล้ว'))
     st.button(_('แสดงทั้งหมด'), icon=":material/filter_alt_off:", on_click=data.reset_filters, width="stretch",
               key="reset_sidebar")
     st.space("medium")

@@ -85,6 +85,23 @@ def run_dq(conn, run_id: str, extra: list[dict] | None = None, raw_mode: str = "
     add("benchmark_unmapped", "warn" if nb else "pass", f"{nb} unmapped" + (f": {names[:1200]}" if nb else ""),
         "core.fact_benchmark_snapshot")
 
+    # model availability (mart.v_model_status): vendor shut a model down but OpenRouter still lists it → hidden in
+    # the dashboard; also surface shutdowns in the next 14 days so they can be checked before they happen
+    cur.execute("""SELECT s.model_id, s.status, s.retire_date FROM mart.v_model_status s
+                   JOIN core.dim_model m USING (model_id)
+                   WHERE m.is_active AND (s.status = 'retired' OR (s.status = 'retiring' AND s.days_left <= 14))
+                   ORDER BY s.retire_date""")
+    st_rows = cur.fetchall()
+    gone = [f"{m} ({d})" for m, s, d in st_rows if s == "retired"]
+    soon = [f"{m} ({d})" for m, s, d in st_rows if s == "retiring"]
+    detail = []
+    if gone:
+        detail.append(f"{len(gone)} shut down by the vendor but still listed on OpenRouter (hidden): {', '.join(gone)}")
+    if soon:
+        detail.append(f"{len(soon)} shut down within 14 days: {', '.join(soon)}")
+    add("model_status", "warn" if st_rows else "pass", "; ".join(detail) or "no shut-down model still listed",
+        "mart.v_model_status")
+
     # every step of this run finished (a failed source never blocks others, but must be visible)
     failed = sorted(s for s, v in job_status.items() if (v or "").startswith("failed") and s != "dq_checks")
     add("steps_failed", "fail" if failed else "pass", ", ".join(failed) if failed else "all steps finished")

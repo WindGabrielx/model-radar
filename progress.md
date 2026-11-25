@@ -103,6 +103,16 @@ Built with the official Streamlit skill (`developing-with-streamlit`, installed 
 - ✅ README in English (`README.md`) and Thai (`README.th.md`) with features, screenshots, architecture, sources, metric logic and a 23 Nov 2026 snapshot
 - ✅ `.gitignore` covers `.env`, secrets, `.claude/`, `config/`, HF cache, raw spool
 
+### 11. Model availability status (2026-11-25)
+- ✅ Migration 015: `mart.v_model_status` (active / retiring ≤30 d / retired) from firm official shutdowns + OpenRouter
+  `expiration_date` + "left OpenRouter"; `core.model_override` loaded from `seed/model_overrides.csv` (empty for now)
+- ✅ Lifecycle name matching: dated snapshots map by words + the canonical_slug date stamp; unmapped events re-mapped
+  every run (25 newly mapped, incl. Claude Opus 4.1 and Claude Sonnet 4.5)
+- ✅ Dashboard: retired models hidden by default (sidebar switch "รวมโมเดลที่ปิดแล้ว"), "ปิด 30 พ.ย." label after
+  retiring models' names everywhere, notice line under the filter note, glossary entry
+- ✅ DQ `model_status` (warn): vendor-retired models still on OpenRouter + shutdowns within 14 days
+- ✅ Worker image rebuilt; README EN/TH and CLAUDE.md §5/§6/§7/§11 updated
+
 ## Known data caveats
 - Only 29 of 115 active text models have a quality score (AA via `/models`); the rest show blank quality/value.
 - Price history starts 2026-11-22; sparklines and history charts fill in daily.
@@ -124,6 +134,7 @@ cd app && streamlit run streamlit_app.py   # http://localhost:8501
 3. GDELT: every call has returned 429 since 2026-11-23, even a single small request (blocked per IP on GDELT's side, not our rate).
    Decide: keep as is / show 429 as "rate-limited" instead of a failure / drop the step. Other sources are unaffected.
 4. **Model comparison page** (planned 2026-11-25; mockup drafted, not built yet): see the plan below.
+   Uses `mart.v_model_status`: never suggest a retired model, label retiring ones.
 5. Tests (`tests/`), then the event-study analysis (§9.3).
 
 ## Plan: model comparison page ("เทียบโมเดล")
