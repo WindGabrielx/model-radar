@@ -121,5 +121,44 @@ cd app && streamlit run streamlit_app.py   # http://localhost:8501
 ## Next steps (in order)
 1. Publish / activate `00_master` in n8n so the 10:00 schedule runs on its own.
 2. Label the 300 comments in the labelling app, then `python scripts/eval_sentiment.py`.
-3. Wait for GDELT to lift the IP rate limit (the next run back-fills the window).
-4. Tests (`tests/`), then the event-study analysis (§9.3).
+3. GDELT: every call has returned 429 since 2026-11-23, even a single small request (blocked per IP on GDELT's side, not our rate).
+   Decide: keep as is / show 429 as "rate-limited" instead of a failure / drop the step. Other sources are unaffected.
+4. **Model comparison page** (planned 2026-11-25; mockup drafted, not built yet): see the plan below.
+5. Tests (`tests/`), then the event-study analysis (§9.3).
+
+## Plan: model comparison page ("เทียบโมเดล")
+
+Goal: pick a task, then 2–4 models, and compare them row by row, e.g. "for writing articles, which model?".
+Mockup (interactive, real numbers as of 25 Nov): https://claude.ai/artifact/Eo1Fa4E77ySWpbmQym4G3i ·
+local draft `mockups/compare/` (git-ignored).
+
+**Tasks and how each is scored**
+
+| Task | Token mix in:out (per unit) | Rows shown | Proxy / gaps |
+|---|---|---|---|
+| Writing articles | 700 : 2,000 per article | quality, monthly cost, OpenRouter "Content Writing" share, speed, writing sentiment, context | quality is a proxy; few of the 5 vendors are in the task's top 10 |
+| Coding | 6,000 : 2,000 per request | quality, cost, latency, speed, "Code Generation" share, coding sentiment, context | `coding_index` is empty for every model → quality as proxy |
+| Summarising documents | 10,000 : 800 per document | context, cost, quality, speed, "Summarization" share | quality is a proxy |
+| Thai | 1,500 : 1,500 per message | multilingual, "Translation" share, quality, cost, speed | `multilingual_index` only exists for older models → shown as "no data" |
+| Image generation | n/a | image quality (no data), cost per image (no data), input/output token price, context | no quality source; price is per token, not per image |
+
+**UI** (new page under เปรียบเทียบ, after Price & value; native Streamlit widgets, same theme)
+1. ① Task: `st.segmented_control` (5 tasks) + one-line note on how that task is priced.
+2. ② Monthly workload: 3 presets in the task's unit (articles / requests / documents / messages / images).
+3. ③ Models: `st.multiselect` (max 4), task defaults, plus "suggested" buttons: highest quality,
+   best value for this task, cheapest with quality ≥ 50.
+4. Summary: 3 metric cards (highest quality, cheapest per month, fastest) + one sentence comparing quality vs saving.
+5. Comparison table: rows = metrics, columns = models, ★ best per row (no single overall winner, per CLAUDE.md §7),
+   provenance badge per row (third-party / derived / proxy), "no data" shown, never hidden.
+6. Charts: monthly cost bars; quality vs task price scatter with the chosen models highlighted.
+7. "How this task is scored" expander. Selection kept in the URL (`?task=…&models=…`) so it can be shared.
+
+**Build steps**
+1. Migration `015`: `mart.v_model_compare` (current model metrics + multilingual from benchmarks via the alias map)
+   and `mart.v_task_top_models` (task × model token share, flattened from `fact_task_share.top_models`, mapped to `model_id`).
+2. Fix data gaps first where possible: check why `coding_index` / `agentic_index` are never loaded from `/benchmarks`
+   (likely a field-name change) and map more `multilingual_index` rows to current models.
+3. `app/lib/data.py` loaders + task definitions (token mix, rows, proxy flags) in one place.
+4. Page `app/app_pages/compare.py`, Thai + English strings in `i18n_en.json`.
+5. Verify with the agent API (all 5 tasks, 1–4 models), update README (EN/TH) and screenshots.
+6. Image generation stays "limited data" until a quality source is agreed (new source = ask first).

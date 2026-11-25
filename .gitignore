@@ -42,3 +42,6 @@ data/labels/*.tmp
 
 # Personal notes on local services and ports
 LOCAL_SERVICES.md
+
+# Design mockups (local drafts only)
+mockups/
